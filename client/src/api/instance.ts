@@ -1,6 +1,6 @@
 import axios from "axios";
 
-//import { BASE_URL } from "@/constants/endpoints";
+import { BASE_URL } from "@/constants/endpoints";
 
 export const api = axios.create({
   baseURL: "/api",
@@ -8,7 +8,7 @@ export const api = axios.create({
 });
 
 export const axiosInstance = axios.create({
-  baseURL: "http://192.168.0.27",
+  baseURL: BASE_URL,
   timeout: 10000,
   withCredentials: true,
 });
