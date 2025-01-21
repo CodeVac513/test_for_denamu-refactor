@@ -25,7 +25,7 @@ export class Feed extends BaseEntity {
   @Index()
   createdAt: Date;
 
-  @Index({ fulltext: true)
+  @Index({ fulltext: true })
   @Column({ name: 'title', nullable: false })
   title: string;
 
