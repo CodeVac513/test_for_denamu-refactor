@@ -62,7 +62,7 @@ export class RssAccept extends RssInformation {
   @OneToMany((type) => Feed, (feed) => feed.blog)
   feeds: Feed[];
 
-  @Index({ fulltext: true, parser: 'ngram' })
+  @Index({ fulltext: true})
   @Column({ name: 'name', nullable: false })
   name: string;
 
