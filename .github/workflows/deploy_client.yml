@@ -21,8 +21,9 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.CLOUD_INSTANCE_SSH_PORT }}
           script: |
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh
+            # NVM 설정 수정 (라즈베리 파이의 NVM 경로에 맞게)
+            export NVM_DIR="$HOME/.config/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
             cd /var/web05-Denamu
             git pull origin main
