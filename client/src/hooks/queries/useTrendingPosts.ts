@@ -13,7 +13,7 @@ export const useTrendingPosts = () => {
   });
 
   useEffect(() => {
-    const eventSource = new EventSource("https://192.168.0.27/api/feed/trend/sse");
+    const eventSource = new EventSource("http://192.168.0.27/api/feed/trend/sse");
 
     eventSource.onmessage = (event) => {
       try {
