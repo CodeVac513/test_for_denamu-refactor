@@ -8,7 +8,7 @@ export const api = axios.create({
 });
 
 export const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "http://192.168.0.27",
   timeout: 10000,
   withCredentials: true,
 });
