@@ -22,7 +22,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5173',
-      'https://www.denamu.site',
+      'https://192.168.0.27',
       'https://denamu.site',
     ],
     credentials: true,
