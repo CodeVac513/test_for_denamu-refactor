@@ -1,4 +1,4 @@
-export const BASE_URL = "http://192.168.0.27";
+export const BASE_URL = "parkmuseong.iptime.org";
 export const CHAT_SERVER_URL = "https://denamu.site";
 export const ADMIN = {
   LOGIN: "/api/admin/login",
