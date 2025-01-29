@@ -23,6 +23,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:5173',
       'http://192.168.0.27',
+      'http://parkmuseong.iptime.org/',
       'https://denamu.site',
     ],
     credentials: true,
