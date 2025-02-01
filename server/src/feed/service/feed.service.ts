@@ -8,7 +8,7 @@ import {
   FeedViewRepository,
 } from '../repository/feed.repository';
 import { FeedPaginationRequestDto } from '../dto/request/feed-pagination.dto';
-import { FeedView } from '../entity/feed.entity';
+import { Feed, FeedView } from '../entity/feed.entity';
 import {
   FeedPaginationResponseDto,
   FeedPaginationResult,
@@ -39,12 +39,12 @@ export class FeedService {
   ) {}
 
   async readFeedPagination(feedPaginationQueryDto: FeedPaginationRequestDto) {
-    const feedList = await this.feedViewRepository.findFeedPagination(
+    const feedList = await this.feedRepository.findFeedPagination(
       feedPaginationQueryDto.lastId,
       feedPaginationQueryDto.limit,
     );
     const hasMore = this.existNextFeed(feedList, feedPaginationQueryDto.limit);
-    
+
     if (hasMore) feedList.pop();
     const lastId = this.getLastIdFromFeedList(feedList);
     const newCheckFeedList = await this.checkNewFeeds(feedList);
@@ -56,15 +56,15 @@ export class FeedService {
     );
   }
 
-  private existNextFeed(feedList: FeedView[], limit: number) {
+  private existNextFeed(feedList: Feed[], limit: number) {
     return feedList.length > limit;
   }
 
-  private getLastIdFromFeedList(feedList: FeedView[]) {
-    return feedList.length ? feedList[feedList.length - 1].feedId : 0;
+  private getLastIdFromFeedList(feedList: Feed[]) {
+    return feedList.length ? feedList[feedList.length - 1].id : 0;
   }
 
-  private async checkNewFeeds(feedList: FeedView[]) {
+  private async checkNewFeeds(feedList: Feed[]) {
     const newFeedIds = (
       await this.redisService.keys(redisKeys.FEED_RECENT_ALL_KEY)
     ).map((key) => {
@@ -72,29 +72,71 @@ export class FeedService {
       return parseInt(feedId[1]);
     });
 
-    return feedList.map((feed): FeedPaginationResult => {
+    return feedList.map((feed): { feed: Feed; isNew: boolean } => {
       return {
-        ...feed,
-        isNew: newFeedIds.includes(feed.feedId),
+        feed,
+        isNew: newFeedIds.includes(feed.id),
       };
     });
   }
 
-  async readTrendFeedList() {
-    const trendFeedIdList = await this.redisService.lrange(
-      redisKeys.FEED_ORIGIN_TREND_KEY,
-      0,
-      -1,
-    );
-    const trendFeeds = await Promise.all(
-      trendFeedIdList.map(async (feedId) =>
-        this.feedViewRepository.findFeedById(parseInt(feedId)),
-      ),
-    );
-    return FeedTrendResponseDto.toResponseDtoArray(
-      trendFeeds.filter((feed) => feed !== null),
-    );
-  }
+  // async readFeedPagination(feedPaginationQueryDto: FeedPaginationRequestDto) {
+  //   const feedList = await this.feedViewRepository.findFeedPagination(
+  //     feedPaginationQueryDto.lastId,
+  //     feedPaginationQueryDto.limit,
+  //   );
+  //   const hasMore = this.existNextFeed(feedList, feedPaginationQueryDto.limit);
+  //
+  //   if (hasMore) feedList.pop();
+  //   const lastId = this.getLastIdFromFeedList(feedList);
+  //   const newCheckFeedList = await this.checkNewFeeds(feedList);
+  //   const feedPagination = FeedResult.toResultDtoArray(newCheckFeedList);
+  //   return FeedPaginationResponseDto.toResponseDto(
+  //     feedPagination,
+  //     lastId,
+  //     hasMore,
+  //   );
+  // }
+
+  // private existNextFeed(feedList: FeedView[], limit: number) {
+  //   return feedList.length > limit;
+  // }
+  //
+  // private getLastIdFromFeedList(feedList: FeedView[]) {
+  //   return feedList.length ? feedList[feedList.length - 1].feedId : 0;
+  // }
+  //
+  // private async checkNewFeeds(feedList: FeedView[]) {
+  //   const newFeedIds = (
+  //     await this.redisService.keys(redisKeys.FEED_RECENT_ALL_KEY)
+  //   ).map((key) => {
+  //     const feedId = key.match(/feed:recent:(\d+)/);
+  //     return parseInt(feedId[1]);
+  //   });
+  //
+  //   return feedList.map((feed): FeedPaginationResult => {
+  //     return {
+  //       ...feed,
+  //       isNew: newFeedIds.includes(feed.feedId),
+  //     };
+  //   });
+  // }
+  //
+  // async readTrendFeedList() {
+  //   const trendFeedIdList = await this.redisService.lrange(
+  //     redisKeys.FEED_ORIGIN_TREND_KEY,
+  //     0,
+  //     -1,
+  //   );
+  //   const trendFeeds = await Promise.all(
+  //     trendFeedIdList.map(async (feedId) =>
+  //       this.feedViewRepository.findFeedById(parseInt(feedId)),
+  //     ),
+  //   );
+  //   return FeedTrendResponseDto.toResponseDtoArray(
+  //     trendFeeds.filter((feed) => feed !== null),
+  //   );
+  // }
 
   async searchFeedList(searchFeedQueryDto: SearchFeedRequestDto) {
     const { find, page, limit, type } = searchFeedQueryDto;

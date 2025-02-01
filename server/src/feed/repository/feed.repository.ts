@@ -10,6 +10,22 @@ export class FeedRepository extends Repository<Feed> {
     super(Feed, dataSource.createEntityManager());
   }
 
+  async findFeedPagination(lastId: number, limit: number) {
+    const query = this.createQueryBuilder('feed')
+      .innerJoinAndSelect('feed.blog', 'rss_accept')
+      .where((qb) => {
+        if (lastId) {
+          return 'feed.id < :lastId';
+        }
+        return '1=1';
+      })
+      .setParameter('lastId', lastId)
+      .orderBy('feed.createdAt', 'DESC')
+      .take(limit + 1);
+
+    return await query.getMany();
+  }
+
   async searchFeedList(
     find: string,
     limit: number,
