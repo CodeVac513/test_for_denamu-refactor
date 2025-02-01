@@ -39,18 +39,26 @@ export class FeedService {
   ) {}
 
   async readFeedPagination(feedPaginationQueryDto: FeedPaginationRequestDto) {
-    const feedList = await this.feedViewRepository.findFeedPagination(
-      feedPaginationQueryDto.lastId,
-      feedPaginationQueryDto.limit,
-    );
-    const hasMore = this.existNextFeed(feedList, feedPaginationQueryDto.limit);
-    
-    if (hasMore) feedList.pop();
-    const lastId = this.getLastIdFromFeedList(feedList);
-    const newCheckFeedList = await this.checkNewFeeds(feedList);
-    const feedPagination = FeedResult.toResultDtoArray(newCheckFeedList);
+    const { lastId, limit } = feedPaginationQueryDto;
+    const [feedList, recentFeedIds] = await Promise.all([
+      this.feedViewRepository.findFeedPagination(lastId, limit),
+      this.redisService.lrange(redisKeys.FEED_RECENT_ALL_KEY, 0, -1),
+    ]);
+  
+    const newFeedList = feedList.map((feed) => ({
+      ...feed,
+      isNew: recentFeedIds.includes(feed.feedId.toString()),
+    }));
+  
+    const hasMore = newFeedList.length > limit;
+    if (hasMore) {
+      newFeedList.pop();
+    }
+  
+    const lastId = newFeedList.length ? newFeedList[newFeedList.length - 1].feedId : 0;
+  
     return FeedPaginationResponseDto.toResponseDto(
-      feedPagination,
+      newFeedList,
       lastId,
       hasMore,
     );
